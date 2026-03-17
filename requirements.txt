@@ -1,0 +1,8 @@
+pandas>=2.0
+numpy>=1.25
+scipy>=1.11
+pulp>=2.7
+simpy>=4.1
+openpyxl>=3.1       # read .xlsx
+matplotlib>=3.8
+jupyter>=1.0

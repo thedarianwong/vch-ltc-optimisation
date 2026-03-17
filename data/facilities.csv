@@ -1,0 +1,151 @@
+facility_id,facility_name,ownership_type,licensed_bed_count,geographic_zone,care_specialisation
+FAC_0001,Pacific Care Home,Private Non-Profit,60,Vancouver Downtown/West End,General
+FAC_0002,Valley Manor,Private For-Profit,77,Vancouver South,General
+FAC_0003,Royal Place,Private For-Profit,65,Vancouver South,Dementia/Cognitive
+FAC_0004,Heritage Terrace,Private Non-Profit,37,Richmond,General
+FAC_0005,Aspen Lodge,Public,118,Richmond,Dementia/Cognitive
+FAC_0006,Arbutus Care Home,Public,97,Vancouver Downtown/West End,General
+FAC_0007,Cedar Lodge,Public,99,Vancouver South,Psychogeriatric
+FAC_0008,Silver Manor,Private For-Profit,42,Richmond,Psychogeriatric
+FAC_0009,Spruce Gardens,Private Non-Profit,134,Vancouver Westside,Complex Medical
+FAC_0010,Cedar Villa,Private For-Profit,33,North Shore,Dementia/Cognitive
+FAC_0011,Golden Heights,Public,89,Richmond,General
+FAC_0012,Aspen Care Centre,Private For-Profit,199,Vancouver Downtown/West End,Palliative
+FAC_0013,Royal Pavilion,Private For-Profit,40,Vancouver Downtown/West End,Complex Medical
+FAC_0014,Valley Care Home,Public,50,Richmond,General
+FAC_0015,Harbour Heights,Public,70,Vancouver Downtown/West End,Rehabilitation
+FAC_0016,Arbutus Residence,Public,51,Vancouver Westside,Palliative
+FAC_0017,Valley Place,Private Non-Profit,30,Sea-to-Sky,Psychogeriatric
+FAC_0018,Silver Residence,Private Non-Profit,69,Vancouver Westside,Complex Medical
+FAC_0019,Heritage Lodge,Private Non-Profit,39,Vancouver South,Dementia/Cognitive
+FAC_0020,Cambie Lodge,Private Non-Profit,84,Richmond,Dementia/Cognitive
+FAC_0021,Capilano Residence,Private Non-Profit,42,Vancouver South,Psychogeriatric
+FAC_0022,Park Care Home,Public,144,Vancouver Westside,Rehabilitation
+FAC_0023,Dogwood Villa,Private Non-Profit,45,Sea-to-Sky,General
+FAC_0024,Pacific Care Centre,Private Non-Profit,56,Vancouver South,General
+FAC_0025,Garden Villa,Private Non-Profit,100,Sunshine Coast,General
+FAC_0026,Fir Terrace,Private For-Profit,36,Sea-to-Sky,Palliative
+FAC_0027,Burrard Gardens,Public,74,Vancouver Midtown,Psychogeriatric
+FAC_0028,Mountain Care Home,Private Non-Profit,128,Vancouver Downtown/West End,General
+FAC_0029,Royal House,Private Non-Profit,29,Vancouver Downtown/West End,Dementia/Cognitive
+FAC_0030,Garden Manor,Public,73,Vancouver Downtown/West End,General
+FAC_0031,Heritage Care Centre,Private Non-Profit,75,Vancouver Downtown/West End,Psychogeriatric
+FAC_0032,Valley Pavilion,Public,98,Richmond,Palliative
+FAC_0033,Burrard Place,Public,35,Vancouver Downtown/West End,Palliative
+FAC_0034,Burrard Residence,Private For-Profit,34,Vancouver Midtown,Dementia/Cognitive
+FAC_0035,Silver Terrace,Private For-Profit,86,North Shore,Dementia/Cognitive
+FAC_0036,Valley Heights,Private For-Profit,77,Vancouver Downtown/West End,General
+FAC_0037,Mountain Gardens,Private Non-Profit,75,North Shore,General
+FAC_0038,Harbour Villa,Public,79,Vancouver Midtown,Rehabilitation
+FAC_0039,Lake Place,Private For-Profit,47,Vancouver Downtown/West End,Palliative
+FAC_0040,Dogwood Care Centre,Private Non-Profit,74,Richmond,Psychogeriatric
+FAC_0041,Valley Terrace,Public,77,Richmond,Psychogeriatric
+FAC_0042,Royal Terrace,Private Non-Profit,46,North Shore,Dementia/Cognitive
+FAC_0043,Lions Care Home,Public,169,Richmond,Complex Medical
+FAC_0044,Royal Care Home,Private For-Profit,84,North Shore,Psychogeriatric
+FAC_0045,Lions Care Centre,Private Non-Profit,36,Vancouver Midtown,Palliative
+FAC_0046,Valley Lodge,Private For-Profit,92,Vancouver Downtown/West End,General
+FAC_0047,Silver Gardens,Private Non-Profit,40,Richmond,Dementia/Cognitive
+FAC_0048,Lions Manor,Private Non-Profit,98,North Shore,General
+FAC_0049,Hemlock Care Centre,Private Non-Profit,119,Sunshine Coast,Psychogeriatric
+FAC_0050,Dogwood Place,Public,44,Vancouver South,Dementia/Cognitive
+FAC_0051,Park Place,Private For-Profit,107,Vancouver South,General
+FAC_0052,Lake Heights,Private For-Profit,81,North Shore,Complex Medical
+FAC_0053,Aspen House,Private For-Profit,100,Vancouver South,Dementia/Cognitive
+FAC_0054,Arbutus Gardens,Private For-Profit,172,Sea-to-Sky,General
+FAC_0055,Oak Residence,Private Non-Profit,58,North Shore,General
+FAC_0056,Spruce Pavilion,Private For-Profit,45,Vancouver South,Complex Medical
+FAC_0057,Garden Care Home,Public,42,Richmond,Dementia/Cognitive
+FAC_0058,Pacific Place,Public,44,Richmond,Palliative
+FAC_0059,Harbour Terrace,Public,64,Vancouver Downtown/West End,Dementia/Cognitive
+FAC_0060,Mountain Care Centre,Private Non-Profit,79,Sea-to-Sky,Rehabilitation
+FAC_0061,Cambie Gardens,Private Non-Profit,76,Vancouver Westside,Dementia/Cognitive
+FAC_0062,Park Villa,Private Non-Profit,100,North Shore,Dementia/Cognitive
+FAC_0063,Sunrise Terrace,Private For-Profit,67,Vancouver Midtown,Rehabilitation
+FAC_0064,Pacific Terrace,Private Non-Profit,137,Sea-to-Sky,Dementia/Cognitive
+FAC_0065,Fraser Lodge,Private Non-Profit,58,Vancouver South,General
+FAC_0066,Fir Care Centre,Private Non-Profit,259,Vancouver Downtown/West End,General
+FAC_0067,Harbour Pavilion,Public,91,Sea-to-Sky,Complex Medical
+FAC_0068,Sunrise Heights,Private For-Profit,43,Vancouver Downtown/West End,Complex Medical
+FAC_0069,Evergreen Villa,Public,39,Vancouver Midtown,Complex Medical
+FAC_0070,Eagle Terrace,Private For-Profit,84,Sunshine Coast,General
+FAC_0071,Golden Place,Private For-Profit,59,Sunshine Coast,General
+FAC_0072,Aspen Villa,Public,95,Vancouver Westside,General
+FAC_0073,Sunrise Gardens,Public,84,Richmond,General
+FAC_0074,Lions Pavilion,Private For-Profit,64,Vancouver South,Dementia/Cognitive
+FAC_0075,Burrard House,Private For-Profit,43,Vancouver Midtown,General
+FAC_0076,Lake Care Home,Private For-Profit,31,Vancouver Midtown,Dementia/Cognitive
+FAC_0077,Lake Gardens,Private For-Profit,53,Richmond,Rehabilitation
+FAC_0078,Garden Lodge,Public,102,Richmond,General
+FAC_0079,Hemlock Lodge,Private Non-Profit,74,North Shore,Dementia/Cognitive
+FAC_0080,Aspen Place,Public,35,North Shore,Palliative
+FAC_0081,Willow Terrace,Private For-Profit,72,Vancouver Downtown/West End,General
+FAC_0082,Alder Villa,Private Non-Profit,80,Vancouver Westside,Complex Medical
+FAC_0083,Harbour House,Private Non-Profit,42,Vancouver Downtown/West End,Rehabilitation
+FAC_0084,Pine Gardens,Public,72,Vancouver Westside,Psychogeriatric
+FAC_0085,Arbutus Manor,Private Non-Profit,68,Vancouver South,General
+FAC_0086,Aspen Heights,Private Non-Profit,37,North Shore,Rehabilitation
+FAC_0087,Eagle Care Centre,Private For-Profit,79,Vancouver South,Dementia/Cognitive
+FAC_0088,Burrard Pavilion,Private Non-Profit,88,Vancouver Downtown/West End,General
+FAC_0089,Pine Pavilion,Private For-Profit,114,Vancouver Downtown/West End,Dementia/Cognitive
+FAC_0090,Pacific Manor,Private Non-Profit,112,North Shore,Psychogeriatric
+FAC_0091,Royal Lodge,Public,33,Richmond,Dementia/Cognitive
+FAC_0092,Fraser Care Home,Private For-Profit,41,Vancouver Downtown/West End,General
+FAC_0093,Royal Gardens,Private For-Profit,86,Vancouver Downtown/West End,Complex Medical
+FAC_0094,Mountain Heights,Private Non-Profit,86,Richmond,General
+FAC_0095,Ocean Manor,Private For-Profit,86,Vancouver Downtown/West End,General
+FAC_0096,Spruce Manor,Private Non-Profit,300,North Shore,General
+FAC_0097,Hemlock Manor,Private Non-Profit,88,Richmond,General
+FAC_0098,Alder Manor,Private Non-Profit,117,Vancouver Downtown/West End,General
+FAC_0099,Alder Care Centre,Public,107,Vancouver Downtown/West End,General
+FAC_0100,Golden Lodge,Public,92,Sunshine Coast,Complex Medical
+FAC_0101,Arbutus Care Centre,Public,56,Vancouver South,General
+FAC_0102,Dogwood Heights,Private Non-Profit,97,Vancouver South,General
+FAC_0103,Ocean Terrace,Private Non-Profit,45,North Shore,Rehabilitation
+FAC_0104,Heritage Care Home,Private Non-Profit,59,Sea-to-Sky,Dementia/Cognitive
+FAC_0105,Oak Heights,Private For-Profit,52,Sunshine Coast,Complex Medical
+FAC_0106,Lake Manor,Public,69,Richmond,General
+FAC_0107,Golden Villa,Private Non-Profit,212,Vancouver South,General
+FAC_0108,Cypress Place,Private For-Profit,26,Vancouver Downtown/West End,General
+FAC_0109,Arbutus Place,Public,93,North Shore,General
+FAC_0110,Lake Lodge,Public,29,Vancouver Westside,General
+FAC_0111,Cypress Villa,Private Non-Profit,52,Vancouver South,General
+FAC_0112,Aspen Care Home,Public,114,Sea-to-Sky,General
+FAC_0113,Harbour Care Centre,Private For-Profit,68,Vancouver Downtown/West End,General
+FAC_0114,Hemlock Pavilion,Private For-Profit,38,Vancouver Westside,Dementia/Cognitive
+FAC_0115,Silver Care Centre,Private Non-Profit,46,Vancouver Downtown/West End,General
+FAC_0116,Ocean Place,Private For-Profit,93,Vancouver South,General
+FAC_0117,Cambie Care Home,Private For-Profit,46,Vancouver Downtown/West End,Dementia/Cognitive
+FAC_0118,Cambie House,Public,74,Vancouver Downtown/West End,Complex Medical
+FAC_0119,Dogwood House,Private For-Profit,68,Vancouver Downtown/West End,General
+FAC_0120,Arbutus Heights,Private Non-Profit,48,Richmond,Palliative
+FAC_0121,Hemlock Place,Private For-Profit,194,Richmond,Complex Medical
+FAC_0122,Golden House,Private For-Profit,91,Vancouver Westside,General
+FAC_0123,Silver Care Home,Private Non-Profit,24,Sunshine Coast,Rehabilitation
+FAC_0124,Ocean Gardens,Public,73,Vancouver South,Rehabilitation
+FAC_0125,Pine Place,Public,47,Vancouver Midtown,General
+FAC_0126,Ocean Villa,Private Non-Profit,102,North Shore,General
+FAC_0127,Garden Place,Private For-Profit,44,Vancouver Midtown,Palliative
+FAC_0128,Mountain Terrace,Private For-Profit,62,Sunshine Coast,Complex Medical
+FAC_0129,Lake Care Centre,Public,85,Vancouver Downtown/West End,General
+FAC_0130,Pacific Gardens,Private Non-Profit,102,Sunshine Coast,General
+FAC_0131,Maple Gardens,Private Non-Profit,36,Vancouver Downtown/West End,General
+FAC_0132,Garden Care Centre,Public,56,Sea-to-Sky,Dementia/Cognitive
+FAC_0133,Pine Residence,Public,52,Vancouver Westside,Dementia/Cognitive
+FAC_0134,Park Manor,Private Non-Profit,48,Sunshine Coast,General
+FAC_0135,Park Care Centre,Private For-Profit,161,Vancouver Downtown/West End,Dementia/Cognitive
+FAC_0136,Eagle Pavilion,Private Non-Profit,81,Vancouver Westside,Complex Medical
+FAC_0137,Lions Lodge,Private Non-Profit,35,Sunshine Coast,General
+FAC_0138,Sunrise Pavilion,Private For-Profit,105,Vancouver Westside,General
+FAC_0139,Aspen Manor,Private Non-Profit,192,Richmond,Complex Medical
+FAC_0140,Spruce House,Private For-Profit,111,Richmond,Rehabilitation
+FAC_0141,Willow Residence,Private For-Profit,31,Vancouver South,Dementia/Cognitive
+FAC_0142,Mountain Manor,Private Non-Profit,52,Richmond,Dementia/Cognitive
+FAC_0143,Eagle Gardens,Private Non-Profit,125,Vancouver Westside,General
+FAC_0144,Pine Care Home,Private Non-Profit,46,Sea-to-Sky,Dementia/Cognitive
+FAC_0145,Heritage Place,Private Non-Profit,83,Vancouver Downtown/West End,Dementia/Cognitive
+FAC_0146,Park Lodge,Public,98,Vancouver Midtown,General
+FAC_0147,Heritage Heights,Private Non-Profit,41,Sunshine Coast,General
+FAC_0148,Birch House,Private Non-Profit,64,Sea-to-Sky,General
+FAC_0149,Fir Gardens,Public,20,Vancouver South,General
+FAC_0150,Silver Heights,Private Non-Profit,39,Richmond,General
