@@ -1,0 +1,219 @@
+% draft/SMALL_EXPERIMENT.tex
+% Small-scale controlled experiment (2 facilities, 22 beds)
+% Run: PYTHONPATH=. .venv/bin/python experiments/small_experiment.py
+% 30 replications | 730-day horizon | 90-day warm-up
+% θ_CommHigh recalibrated: 0.75%/month (133-month mean patience)
+
+\section{Experiments: Small-Scale Setting}
+\label{sec:small}
+
+\subsection{Setup}
+
+We construct a two-facility, 22-bed instance to verify the model mechanics at a
+scale that is transparent and hand-verifiable before applying VCH-calibrated parameters.
+All parameters are fixed; only the assignment policy varies.
+
+\begin{table}[H]
+\centering
+\caption{Small-scale experiment configuration.}
+\label{tab:small_config}
+\begin{tabular}{@{}p{3.6cm}p{3.0cm}p{3.6cm}p{3.0cm}@{}}
+\toprule
+\textbf{Parameter} & \textbf{Value} & \textbf{Parameter} & \textbf{Value} \\
+\midrule
+Facility A (Cedar Grove)
+  & 10 beds, $u_n = -0.10$
+  & Facility B (Maple House)
+  & 12 beds, $u_n = +0.15$ \\[2pt]
+Arrival rate $\lambda$
+  & 3 clients/month
+  & Vacancy rate $\mu$
+  & 2 beds/month \\[2pt]
+Overload $(\lambda{-}\mu)/\lambda$
+  & 33\%
+  & Initial queue $Q_0$
+  & 10 clients \\[2pt]
+$\theta$ (Acute Care)
+  & 50\%/month
+  & $\theta$ (Comm.\ Emergency)
+  & 30\%/month \\[2pt]
+$\theta$ (Comm.\ High)
+  & 0.75\%/month
+  & $\theta$ (Transfer/Site)
+  & 15\%/month \\[2pt]
+Simulation horizon
+  & 730 days
+  & Warm-up period
+  & 90 days \\[2pt]
+Replications
+  & 30
+  & Offer turnaround
+  & 2 days/decline \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Cedar Grove has a below-average baseline deferral propensity ($u_n = -0.10$).
+Maple House has an above-average propensity ($u_n = +0.15$), making it more
+selective for high-intensity clients. No gender restrictions apply; gender
+compatibility is handled prior to the offer stage and is not part of the
+assignment constraints modelled here.
+
+The facility-specific effect $u_n$ and the client intensity coefficient
+$\beta_{r_p} = +0.9$ together determine how much a facility's selectiveness
+interacts with client complexity. All logistic coefficients
+($\alpha$, $\boldsymbol{\beta}$, $\sigma^2$) are placeholder values estimated
+from synthetic data mirroring the VCH PARIS schema. Real values would be
+obtained from logistic regression on historical offer outcome records; the
+framework is designed for direct coefficient substitution once that data is
+available.
+
+The Community High abandonment rate $\theta = 0.75\%$/month (mean patience
+$\approx 133$ months) is calibrated so that the Cyclic FIFO policy reproduces
+the OSA-reported mean wait of 473 days for non-urgent community clients at
+VCH scale (Section~\ref{sec:data}). The small-scale experiment uses the same
+rate for consistency.
+
+We compare three policies:
+
+\begin{itemize}
+  \item \textbf{FCFS (No Declines):} all facility offers are accepted
+        ($\hat{p}_{pn} = 0$). Clients are served first-in-first-out across all
+        tiers. This eliminates all bed-loss days and serves as a lower bound on
+        wasted capacity.
+  \item \textbf{Cyclic FIFO:} vacancies rotate through the four priority tiers
+        in equal 25\% rotation, serving the longest-waiting eligible client
+        within each tier. This reflects VCH's current administrative policy.
+  \item \textbf{Optimised:} at each vacancy, the eligible client minimising
+        $\hat{p}_{pn}$ is selected, subject to a fairness window of 20 recent
+        placements ($\pm 10\%$ tolerance per tier).
+\end{itemize}
+
+\subsection{Results}
+
+\subsubsection*{Overall System Performance}
+
+Table~\ref{tab:small_overall} reports system-wide outcomes averaged over 30 replications.
+
+\begin{table}[H]
+\centering
+\caption{Overall results, small-scale experiment (30 reps, 730-day horizon, 90-day warm-up).
+         Values are mean $\pm$ 95\% CI.}
+\label{tab:small_overall}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Metric} & \textbf{FCFS (No Declines)} & \textbf{Cyclic FIFO} & \textbf{Optimised} \\
+\midrule
+Placements              & $39 \pm 2$    & $39 \pm 2$    & $40 \pm 2$ \\
+Declinations            & $0 \pm 0$     & $8 \pm 1$     & $9 \pm 1$  \\
+Abandonments            & $26 \pm 2$    & $25 \pm 2$    & $21 \pm 2$ \\
+Bed-Loss Days           & $0.0$         & $16.5 \pm 2.5$ & $17.1 \pm 2.2$ \\
+Bed-Loss Days/placement & $0.000$       & $0.420 \pm 0.060$ & $0.430 \pm 0.050$ \\
+Declination rate        & $0.000$       & $0.170 \pm 0.020$ & $0.170 \pm 0.020$ \\
+Mean wait (days)        & $66.4 \pm 11.4$ & $83.4 \pm 12.4$ & $57.9 \pm 6.8$ \\
+Mean queue length       & $5.3 \pm 0.8$ & $6.8 \pm 1.0$ & $7.9 \pm 1.2$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At this scale, the declination rates of Cyclic FIFO and Optimised are
+statistically indistinguishable (both $0.170 \pm 0.020$; confidence intervals
+fully overlap). The primary gain from the optimised policy is in wait times:
+mean wait drops from 83.4 to 57.9 days ($-30.6\%$), driven by large reductions
+in the urgent tiers.
+
+\subsubsection*{Per-Tier Results}
+
+\begin{table}[H]
+\centering
+\caption{Per-tier declination rate, small-scale experiment (mean $\pm$ 95\% CI).}
+\label{tab:small_tier_declin}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Tier} & \textbf{FCFS (No Declines)} & \textbf{Cyclic FIFO} & \textbf{Optimised} \\
+\midrule
+Transfer/Site Specific & $0.000$ & $0.230 \pm 0.050$ & $0.190 \pm 0.050$ \\
+Community High         & $0.000$ & $0.150 \pm 0.040$ & $0.220 \pm 0.040$ \\
+Community Emergency    & $0.000$ & $0.150 \pm 0.040$ & $0.130 \pm 0.040$ \\
+Acute Care             & $0.000$ & $0.130 \pm 0.030$ & $0.130 \pm 0.030$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Per-tier mean wait in days, small-scale experiment (mean $\pm$ 95\% CI).}
+\label{tab:small_tier_wait}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Tier} & \textbf{FCFS (No Declines)} & \textbf{Cyclic FIFO} & \textbf{Optimised} \\
+\midrule
+Transfer/Site Specific & $67.8 \pm 12.9$ & $66.4 \pm 13.5$ & $67.8 \pm 19.0$ \\
+Community High         & $75.1 \pm 11.4$ & $140.8 \pm 30.4$ & $125.2 \pm 21.1$ \\
+Community Emergency    & $62.8 \pm 10.9$ & $60.1 \pm 8.9$   & $35.4 \pm 3.8$ \\
+Acute Care             & $50.2 \pm 7.4$  & $41.0 \pm 5.2$   & $22.4 \pm 3.1$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Wait-time improvement from Cyclic FIFO to Optimised, small-scale experiment.}
+\label{tab:small_improvement}
+\begin{tabular}{lr}
+\toprule
+\textbf{Metric} & \textbf{\% change (Cyclic FIFO $\to$ Optimised)} \\
+\midrule
+Mean wait (overall)             & $-30.6\%$ \\
+\quad Transfer/Site wait        & $+2.1\%$ \\
+\quad Community High wait       & $-11.1\%$ \\
+\quad Community Emergency wait  & $-41.1\%$ \\
+\quad Acute Care wait           & $-45.3\%$ \\
+\midrule
+Declination rate  & $0.000$ (no significant change) \\
+Bed-Loss Days     & $+3.6\%$ (no significant change) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Discussion}
+
+\paragraph{Why Acute Care wait falls sharply.}
+The provider deferral model assigns a priority coefficient $\beta_{q_p} = -0.2$
+per ordinal unit. Acute Care clients have $q_p = 3$, reducing their logit by
+$0.6$ relative to Transfer clients ($q_p = 0$). This gives them the lowest
+predicted $\hat{p}_{pn}$ of any tier, so the optimised policy selects them
+most often. Acute Care mean wait falls from 41.0 to 22.4 days ($-45.3\%$), and
+Community Emergency wait falls from 60.1 to 35.4 days ($-41.1\%$). This mirrors
+real-world practice: urgent clients who are better matches for available beds
+are placed faster when the selection rule accounts for match quality.
+
+\paragraph{Why Community High declination rate rises.}
+Community High clients have higher clinical complexity on average (higher $r_p$),
+giving them elevated $\hat{p}_{pn}$. The optimised policy avoids them in favour
+of lower-risk clients. When the fairness window does force a Community High
+selection, it picks the best-matched Community High client available; even so,
+that client's $\hat{p}_{pn}$ tends to exceed that of a typical Acute Care client.
+The result is a higher observed declination rate for Community High (0.220 vs
+0.150 under Cyclic FIFO) alongside a shorter mean wait (125.2 vs 140.8 days,
+$-11.1\%$). The fairness window limits this to a bounded increase: no tier is
+starved of service.
+
+\paragraph{On FCFS (No Declines) mean wait.}
+FCFS (No Declines) eliminates all declinations by construction, but it uses pure
+first-come, first-served ordering across all tiers. Acute Care clients who arrive
+later than Community High clients must wait behind them regardless of urgency.
+This yields a higher Acute Care mean wait (50.2 days) than Cyclic FIFO (41.0
+days). Separately, Community High wait is lower under FCFS (No Declines) (75.1
+days) than Cyclic FIFO (140.8 days) because FCFS does not cap their service
+share at 25\%. Zero bed-loss days and short urgent-tier waits are therefore
+distinct objectives requiring different selection rules.
+
+\paragraph{Scale and statistical interpretation.}
+With 22 beds and 33\% overload, confidence intervals are wide. At this scale,
+the optimised policy does not significantly reduce total declinations or
+bed-loss days. The key finding is directional: the optimised policy consistently
+reduces urgent-tier wait times without starving lower-urgency tiers. At VCH
+scale, with 55 facilities and 28 arrivals per month, both the declination
+reduction and the wait-time benefits are amplified and statistically robust
+(Section~\ref{sec:vchr}).
