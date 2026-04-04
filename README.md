@@ -1,6 +1,28 @@
-# vch-ltc-optimisation
+<div align="center">
 
-Optimising Long-Term Care Placement Matching to Reduce Service Provider Declinations  
+# 🏥 Optimising Long-Term Care Placement
+### 📊 A robust Operations Research & Discrete Event Simulation Framework
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Operations%20Research-BIP%20%7C%20Queueing%20%7C%20DES-blue?style=flat-square" alt="OR Methods" />
+  <img src="https://img.shields.io/badge/Method-Logistic%20Regression-E0A96D?style=flat-square" alt="Machine Learning" />
+  <img src="https://img.shields.io/badge/Domain-Healthcare%20Analytics-green?style=flat-square" alt="Healthcare" />
+</p>
+
+<table align="center" style="border: none; background-color: transparent;">
+  <tr style="border: none; background-color: transparent;">
+    <td align="center" style="border: none;">📉<br><b>-59%</b><br>Expected<br>Declinations</td>
+    <td align="center" style="border: none;">⏱️<br><b>-85%</b><br>Acute Care<br>Wait Times</td>
+    <td align="center" style="border: none;">🛏️<br><b>-26%</b><br>Bed-Loss<br>Days</td>
+    <td align="center" style="border: none;">📍<br><b>+173%</b><br>In-Region<br>Placements</td>
+  </tr>
+</table>
+
+<br>
+<hr />
+</div>
+
+Optimising Long-Term Care Placement to Reduce Service Providers Declinations  
 **MATH 402W Capstone** — Team LTC × Vancouver Coastal Health
 
 ---
