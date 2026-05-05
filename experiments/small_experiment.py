@@ -56,7 +56,6 @@ FACILITY_NAMES = ["Cedar Grove", "Maple House"]
 CAPACITIES     = [10, 12]          # 10 and 12 beds
 H_N_ARR        = np.array([0, 0])  # for-profit flag not used; both set to 0
 U_N_ARR        = np.array([-0.10, +0.15])   # Cedar Grove below avg deferral; Maple House above
-GENDER_LIM     = [None, None]      # no gender restrictions (handled prior to offer stage)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -108,7 +107,6 @@ def main() -> None:
         capacities=CAPACITIES,
         h_n_arr=H_N_ARR,
         u_n_arr=U_N_ARR,
-        gender_lim_arr=GENDER_LIM,
         n_reps=_SMALL["N_REPLICATIONS"],
         sim_days=_SMALL["SIM_HORIZON"],
         warmup_days=_SMALL["WARM_UP_DAYS"],

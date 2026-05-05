@@ -42,7 +42,6 @@ from model.simulation.queue_model import (
 # Sources: BC OSA 2024/25 LTC Directory
 #   55 facilities (16 health-authority + 39 contracted)
 #   Average 96 beds per facility (28,869 beds / 301 facilities × BC average)
-#   ~60% of facilities have a female gender limitation (common in BC LTC)
 #   All h_n = 0 (for-profit flag not used in current analysis)
 #   u_n ~ N(0, 0.25)  — unobserved facility heterogeneity
 
@@ -61,9 +60,6 @@ H_N_ARR = np.zeros(N_FAC, dtype=int)
 
 # Facility random effects (unobserved heterogeneity)
 U_N_ARR = _RNG_SETUP.normal(0.0, np.sqrt(P.SIGMA_SQ), size=N_FAC)
-
-# No gender restrictions — gender compatibility handled prior to offer stage
-GENDER_LIM = [None] * N_FAC
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -116,7 +112,6 @@ def main() -> None:
         capacities=CAPACITIES,
         h_n_arr=H_N_ARR,
         u_n_arr=U_N_ARR,
-        gender_lim_arr=GENDER_LIM,
         n_reps=_qm.N_REPLICATIONS,
         sim_days=_qm.SIM_HORIZON,
         warmup_days=_qm.WARM_UP_DAYS,

@@ -31,7 +31,6 @@ BETA: dict[str, float] = {
     "q_p":        -0.2,    # priority ordinal: higher urgency → less declined
     "h_n":        +0.1,    # for-profit facility: slightly more selective
     "r_p_x_h_n":  +0.3,    # for-profit × complexity interaction
-    "g_pn":       +1.5,    # gender mismatch: strong deferral signal
     "t":          +0.15,   # flu season (Nov–Jan): slightly elevated deferral
 }
 
@@ -191,26 +190,24 @@ def compute_r_p(cps: int, adl: int) -> float:
 
 
 def compute_p_pn(
-    r_p:  float,
-    q_p:  int,
-    h_n:  int,
-    g_pn: int,
-    t:    int,
-    u_n:  float = 0.0,
+    r_p: float,
+    q_p: int,
+    h_n: int,
+    t:   int,
+    u_n: float = 0.0,
 ) -> float:
     """
     Provider deferral probability for client p offered facility n.
 
-        p_pn = σ(α + u_n + β1·r_p + β2·q_p + β3·h_n + β4·(r_p·h_n) + β5·g_pn + β6·t)
+        p_pn = σ(α + u_n + β1·r_p + β2·q_p + β3·h_n + β4·(r_p·h_n) + β5·t)
 
     Parameters
     ----------
-    r_p  : composite clinical complexity [0, 1]  — from compute_r_p()
-    q_p  : priority ordinal {0, 1, 2, 3}         — from encode_priority()
-    h_n  : for-profit flag {0, 1}                — from funding_to_h_n()
-    g_pn : gender mismatch flag {0, 1}           — from is_gender_mismatch()
-    t    : flu season flag {0, 1}                — from is_flu_season()
-    u_n  : facility random effect (default 0.0 for point estimate)
+    r_p : composite clinical complexity [0, 1]  — from compute_r_p()
+    q_p : priority ordinal {0, 1, 2, 3}         — from encode_priority()
+    h_n : for-profit flag {0, 1}                — from funding_to_h_n()
+    t   : flu season flag {0, 1}                — from is_flu_season()
+    u_n : facility random effect (default 0.0 for point estimate)
 
     Returns
     -------
@@ -219,12 +216,11 @@ def compute_p_pn(
     z = (
         ALPHA
         + u_n
-        + BETA["r_p"]        * r_p
-        + BETA["q_p"]        * q_p
-        + BETA["h_n"]        * h_n
-        + BETA["r_p_x_h_n"]  * r_p * h_n
-        + BETA["g_pn"]       * g_pn
-        + BETA["t"]          * t
+        + BETA["r_p"]       * r_p
+        + BETA["q_p"]       * q_p
+        + BETA["h_n"]       * h_n
+        + BETA["r_p_x_h_n"] * r_p * h_n
+        + BETA["t"]         * t
     )
     return float(1.0 / (1.0 + np.exp(-np.clip(z, -500, 500))))
 

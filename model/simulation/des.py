@@ -36,7 +36,7 @@ from model.parameters import (
     ESCALATION_DAYS, ESCALATION_TARGET,
     BATCH_PROB, BATCH_MAX_SIZE, GEO_PENALTY, REGIONS,
     DES_N_REPLICATIONS,
-    compute_r_p, compute_p_pn, funding_to_h_n, is_gender_mismatch,
+    compute_r_p, compute_p_pn, funding_to_h_n,
 )
 
 # ---------------------------------------------------------------------------
@@ -45,7 +45,7 @@ from model.parameters import (
 
 _CPS_PROBS     = [.05, .10, .20, .25, .20, .12, .08]
 _ADL_PROBS     = [.03, .08, .15, .22, .24, .18, .10]
-_REGION_PROBS  = [0.45, 0.20, 0.20, 0.15]
+_REGION_PROBS  = [0.25, 0.25, 0.25, 0.25]   # uniform across four VCH communities
 
 _CYCLIC_ORDER = list(reversed(PRIORITY_LABELS))
 
@@ -67,7 +67,6 @@ class DESClient:
     priority:     str
     q_p:          int
     r_p:          float
-    gender:       str
     region:       str
     arrival_time: float
     escalations:  int = 0
@@ -87,7 +86,6 @@ class DESSimulator:
         h_n_arr:          np.ndarray,
         u_n_arr:          np.ndarray,
         facility_regions: list[str],
-        gender_lim_arr:   list,
         seed:             int = 0,
         sim_start_month:  int = 10,
     ):
@@ -98,7 +96,6 @@ class DESSimulator:
         self.h_n_arr          = h_n_arr
         self.u_n_arr          = u_n_arr
         self.facility_regions = facility_regions
-        self.gender_lim_arr   = gender_lim_arr
         self.sim_start_month  = sim_start_month
 
         total_cap = sum(capacities)
@@ -298,13 +295,12 @@ class DESSimulator:
         if self.policy == "erlang_a":
             p_pn = 0.0
         else:
-            t_flu = self._is_flu_season()
-            g_pn  = is_gender_mismatch(client.gender, self.gender_lim_arr[n])
-            geo   = 0 if client.region == self.facility_regions[n] else 1
+            t_flu   = self._is_flu_season()
+            geo     = 0 if client.region == self.facility_regions[n] else 1
             u_n_adj = float(self.u_n_arr[n]) + GEO_PENALTY * geo
-            p_pn  = compute_p_pn(
+            p_pn    = compute_p_pn(
                 client.r_p, client.q_p,
-                int(self.h_n_arr[n]), g_pn, t_flu, u_n_adj,
+                int(self.h_n_arr[n]), t_flu, u_n_adj,
             )
 
         if self.rng.random() >= p_pn:
@@ -364,11 +360,8 @@ class DESSimulator:
             return self._select_optimised(n)
         return None
 
-    def _eligible_in_tier(self, tier: str, n: int) -> list[DESClient]:
-        return [
-            c for c in self.queues[tier]
-            if is_gender_mismatch(c.gender, self.gender_lim_arr[n]) == 0
-        ]
+    def _eligible_in_tier(self, tier: str) -> list[DESClient]:
+        return list(self.queues[tier])
 
     def _pop_from_tier(self, tier: str, client: DESClient) -> None:
         q = self.queues[tier]
@@ -381,7 +374,7 @@ class DESSimulator:
     def _select_fcfs(self, n: int) -> DESClient | None:
         best: DESClient | None = None
         for tier in PRIORITY_LABELS:
-            for c in self._eligible_in_tier(tier, n):
+            for c in self._eligible_in_tier(tier):
                 if best is None or c.arrival_time < best.arrival_time:
                     best = c
         if best is not None:
@@ -391,7 +384,7 @@ class DESSimulator:
     def _select_cyclic(self, n: int) -> DESClient | None:
         for _ in range(len(_CYCLIC_ORDER)):
             tier = _CYCLIC_ORDER[self.cycle_pos % len(_CYCLIC_ORDER)]
-            eligible = self._eligible_in_tier(tier, n)
+            eligible = self._eligible_in_tier(tier)
             if eligible:
                 client = min(eligible, key=lambda c: c.arrival_time)
                 self._pop_from_tier(tier, client)
@@ -417,15 +410,14 @@ class DESSimulator:
 
         candidates = []
         for tier in eligible_tiers:
-            candidates.extend(self._eligible_in_tier(tier, n))
+            candidates.extend(self._eligible_in_tier(tier))
         if not candidates:
             return None
 
         def _score(c: DESClient) -> float:
-            g   = is_gender_mismatch(c.gender, self.gender_lim_arr[n])
             geo = 0 if c.region == self.facility_regions[n] else 1
             return compute_p_pn(
-                c.r_p, c.q_p, int(self.h_n_arr[n]), g, t_flu,
+                c.r_p, c.q_p, int(self.h_n_arr[n]), t_flu,
                 float(self.u_n_arr[n]) + GEO_PENALTY * geo,
             )
 
@@ -444,14 +436,13 @@ class DESSimulator:
         priority = str(self.rng.choice(tiers, p=probs))
         cps    = int(self.rng.choice(range(7), p=_CPS_PROBS))
         adl    = int(self.rng.choice(range(7), p=_ADL_PROBS))
-        gender = "Female" if self.rng.random() < 0.55 else "Male"
+        self.rng.random()  # preserve RNG sequence (formerly gender draw)
         region = str(self.rng.choice(REGIONS, p=_REGION_PROBS))
         return DESClient(
             cid=self._cid_counter,
             priority=priority,
             q_p=PRIORITY_MAP[priority],
             r_p=compute_r_p(cps, adl),
-            gender=gender,
             region=region,
             arrival_time=arrival_time,
         )
@@ -523,7 +514,6 @@ def run_des_replications(
     h_n_arr:          np.ndarray,
     u_n_arr:          np.ndarray,
     facility_regions: list[str],
-    gender_lim_arr:   list,
     n_reps:           int = DES_N_REPLICATIONS,
     seed_base:        int = 0,
     sim_days:         int = SIM_HORIZON,
@@ -538,7 +528,6 @@ def run_des_replications(
             h_n_arr=h_n_arr,
             u_n_arr=u_n_arr,
             facility_regions=facility_regions,
-            gender_lim_arr=gender_lim_arr,
             seed=seed_base + rep * 100,
             sim_start_month=sim_start_month,
         ).run(sim_days=sim_days, warmup_days=warmup_days)
@@ -686,7 +675,6 @@ def run_des_comparison(
         for i in range(len(facility_names))
     ])
     u_n_arr = np.array([u_n_map.get(name, 0.0) for name in facility_names])
-    gender_lim_arr = [None] * len(facility_names)
 
     facility_regions = []
     for i in range(len(facility_names)):
@@ -709,7 +697,6 @@ def run_des_comparison(
             facility_names=facility_names, capacities=capacities,
             h_n_arr=h_n_arr, u_n_arr=u_n_arr,
             facility_regions=facility_regions,
-            gender_lim_arr=gender_lim_arr,
             n_reps=n_reps, sim_days=sim_days, warmup_days=warmup_days,
         )
         summaries[policy] = summarise_des_replications(reps)

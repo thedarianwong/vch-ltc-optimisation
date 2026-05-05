@@ -1,267 +1,161 @@
-<div align="center">
+# Optimising Long-Term Care Placement to Reduce Service Provider Declinations
 
-# 🏥 Optimising Long-Term Care Placement
-### 📊 A robust Operations Research & Discrete Event Simulation Framework
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Operations%20Research-BIP%20%7C%20Queueing%20%7C%20DES-blue?style=flat-square" alt="OR Methods" />
-  <img src="https://img.shields.io/badge/Method-Logistic%20Regression-E0A96D?style=flat-square" alt="Machine Learning" />
-  <img src="https://img.shields.io/badge/Domain-Healthcare%20Analytics-green?style=flat-square" alt="Healthcare" />
-</p>
-
-<table align="center" style="border: none; background-color: transparent;">
-  <tr style="border: none; background-color: transparent;">
-    <td align="center" style="border: none;">📉<br><b>-59%</b><br>Expected<br>Declinations</td>
-    <td align="center" style="border: none;">⏱️<br><b>-85%</b><br>Acute Care<br>Wait Times</td>
-    <td align="center" style="border: none;">🛏️<br><b>-26%</b><br>Bed-Loss<br>Days</td>
-    <td align="center" style="border: none;">📍<br><b>+173%</b><br>In-Region<br>Placements</td>
-  </tr>
-</table>
-
-<br>
-<hr />
-</div>
-
-Optimising Long-Term Care Placement to Reduce Service Providers Declinations  
-**MATH 402W Capstone** — Team LTC × Vancouver Coastal Health
+**MATH 402W Capstone**
+Spring 2026
 
 ---
 
-## Problem
+## Overview
 
-When a bed opens in a Vancouver Coastal Health (VCH) LTC facility, it is offered to a client on
-the priority waitlist. If the client's care provider **declines** the offer, the bed sits empty
-for ~2 days before the next offer goes out. With ~18 waitlist-accessible vacancies per month and
-a real backlog of ~83 clients across four priority tiers, even modest improvements in match quality
-recover hundreds of empty bed-days per year.
+When a bed opens in a VCH long-term care facility, it is offered to a client on the priority waitlist. If the care provider **declines** the offer, the bed sits empty for ~2 days before the next offer goes out. This project builds a data-driven assignment policy — a fairness-window selector guided by predicted declination probabilities — and evaluates it against VCH's current Cyclic FIFO discipline using queueing analysis and discrete-event simulation.
 
-This project builds a full pipeline — logistic deferral model → LP optimisation → discrete-event
-simulation — to quantify how much better a data-driven assignment policy performs against VCH's
-current cyclic FIFO discipline.
+**All paper results come from the three scripts in `experiments/`.** The `model/` folder is the supporting library those scripts depend on.
 
 ---
 
-## Setup
-
-**Requirements:** Python 3.9+
+## Quickstart
 
 ```bash
-# 1. Clone the repo
 git clone <repo-url>
 cd vch-ltc-optimisation
 
-# 2. Create and activate the virtual environment
 python3 -m venv .venv
-source .venv/bin/activate        # macOS / Linux
-# .venv\Scripts\activate         # Windows
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
 
-# 3. Install dependencies
 pip install -r requirements.txt
-
-# 4. Generate synthetic data (run once — creates data/generated/*.csv)
-PYTHONPATH=. python data/mock_data.py
 ```
 
-To deactivate the venv when you're done:
+---
+
+## Running the Experiments
+
+These three scripts reproduce every number in the paper. Run them from the repo root with the venv active.
+
+### 1. Small-Scale Validation (Step 4)
+2 facilities · 22 beds · λ = 3/month · μ = 2/month · 30 reps · ~30 seconds
 
 ```bash
-deactivate
+PYTHONPATH=. python experiments/small_experiment.py
 ```
+
+Validates model behaviour at a transparent, hand-checkable scale before applying VCH parameters.
+
+| Metric | Cyclic FIFO | Optimised | Change |
+|--------|-------------|-----------|--------|
+| Declination rate | 0.200 | 0.170 | **−19%** |
+| Bed-loss days | 21.3 | 17.2 | **−19%** |
+| Mean wait | 81.1 d | 57.2 d | **−29%** |
+| Acute Care wait | 46.8 d | 22.8 d | **−51%** |
+
+---
+
+### 2. VCH Case Study — Queue Model (Step 4)
+55 facilities · ~5,300 beds · λ = 28/month · μ = 18/month · 30 reps · ~2 minutes
+
+```bash
+PYTHONPATH=. python experiments/vch_experiment.py
+```
+
+Calibrated to BC Office of Seniors Advocate 2024/25 data.
+
+| Metric | Cyclic FIFO | Optimised | Change |
+|--------|-------------|-----------|--------|
+| Declination rate | 0.180 | 0.160 | **−14%** |
+| Bed-loss days | ~243 | ~210 | **−14%** |
+| Acute Care wait | 38.0 d | 5.9 d | **−85%** |
+
+---
+
+### 3. VCH Case Study — Discrete Event Simulation (Step 5)
+55 facilities · same calibration + 4 extensions · 30 reps · ~5 minutes
+
+```bash
+PYTHONPATH=. python experiments/des_experiment.py
+```
+
+Adds priority escalation, batch arrivals, flu-season calendar, and geographic soft penalty.
+
+| Metric | Cyclic FIFO | Optimised | Change |
+|--------|-------------|-----------|--------|
+| Declination rate | 0.210 | 0.160 | **−24%** |
+| Bed-loss days | ~291 | ~204 | **−30%** |
+| Acute Care wait | 53.2 d | 17.3 d | **−67%** |
+| In-region placement | 31% | 78% | **+152%** |
+
+---
+
+## How the Model Works
+
+The modelling pipeline has five steps. Steps 1–3 produce the declination probabilities and optimal static assignment used to calibrate the simulations. Steps 4–5 are what the experiments run.
+
+```
+Step 1  model/core/logistic.py        Logistic model — estimates p_pn for each client-facility pair
+Step 2  model/optimisation/solver.py  BIP — minimises expected declinations over a static snapshot
+Step 3  model/optimisation/           Fairness Window — makes the BIP dynamic (online policy)
+Step 4  model/simulation/queue_model.py   Queue simulation — 3-year horizon, tier-specific abandonment
+Step 5  model/simulation/des.py           DES — adds escalation, batch arrivals, flu, geography
+```
+
+### Declination probability model
+
+```
+p_pn = σ( α + u_n + β₁·r_p + β₂·h_n + β₃·t )
+```
+
+| Term | Meaning |
+|------|---------|
+| `α = −1.8` | Baseline log-odds (~14% base declination rate) |
+| `u_n ~ N(0, 0.25)` | Facility random effect (unobserved heterogeneity) |
+| `β₁·r_p` | Client complexity from CPS + ADL scores (+0.9) |
+| `β₂·h_n` | Facility staffing / for-profit flag (+0.1) |
+| `β₃·t` | Flu-season indicator Nov–Jan (+0.15) |
+
+All β values are placeholders calibrated to synthetic data mirroring VCH's PARIS system. Replace with MLE estimates once real offer-outcome data is available.
+
+### BIP result (Step 2)
+
+On a VCH snapshot of 500 clients across 30 facilities, expected declinations fall from **113.5 → 46.4** — a theoretical **−59%** reduction over Cyclic FIFO.
 
 ---
 
 ## Repository Layout
 
 ```
+experiments/
+  small_experiment.py     — 2-facility controlled validation (paper Section 5.1)
+  vch_experiment.py       — VCH-scale queue model (paper Section 5.2)
+  des_experiment.py       — VCH-scale DES with extensions (paper Section 5.3)
+
 model/
-  parameters.py           — all model constants + helper functions
-  data_loader.py          — loads data/generated/*.csv (swap path for real VCH data)
+  parameters.py           — all constants, β coefficients, helper functions
+  data_loader.py          — loads data/generated/*.csv
   core/
-    logistic.py           — builds the P×N deferral-probability matrix D
+    logistic.py           — builds the P×N deferral matrix D (used by BIP)
   optimisation/
-    baseline.py           — first-come and cyclic-FIFO baseline policies
-    solver.py             — LP relaxation (bipartite matching; TU → integer solution)
-    compare.py            — runs all policies, prints comparison report
+    solver.py             — LP/BIP solver (bipartite matching, TU → integer)
+    baseline.py           — Cyclic FIFO and random baseline implementations
+    compare.py            — batch comparison runner for Steps 1–3
   simulation/
-    queue_model.py        — bed-scarce M/G/∞ queue, three policies (10 reps)
-    des.py                — full DES: + escalation, batch arrivals, geo penalty, flu calendar (30 reps)
-  validation/
-    validate_step2.py     — 36 data/parameter checks
-    validate_step3.py     — 36 optimisation checks
-    validate_step4.py     — 32 queue-model checks
-    validate_step5.py     — 30 DES checks
+    queue_model.py        — bed-scarce queue simulator (used by small + vch experiments)
+    des.py                — extended DES simulator (used by des_experiment)
+  validation/             — unit/integration test suites for each step
 
 data/
-  mock_data.py            — synthetic data generator (30 facilities, ~1,350 offer events)
-  generated/              — facility_details.csv, vacancies.csv, room_characteristics.csv,
-                            waitlist_entry.csv
-
-experiments/
-  small_experiment.py     — 2-facility controlled experiment (hand-verifiable)
-  vch_experiment.py       — VCH-scale case study (55 facilities, 30 reps)
+  mock_data.py            — synthetic data generator
+  generated/              — facility_details.csv, vacancies.csv, waitlist_entry.csv, …
 
 results/
-  plot_results.py         — generates all seven figures
+  plot_results.py         — generates all paper figures
   figures/                — fig1_calibration … fig7_summary (PNG)
 ```
 
 ---
 
-## Model Overview
+## Updating with Real VCH Data
 
-### Step 1 — Logistic Deferral Model (`model/core/logistic.py`)
+Only two files need to change:
 
-A mixed-effects logistic regression estimates the probability that a care provider declines an
-offer for client *p* at facility *n*:
+1. **`model/data_loader.py`** — point `_DEFAULT_DIR` at the real CSVs
+2. **`model/parameters.py`** — re-fit β via logistic regression on `WaitlistOfferOutcome`, recalibrate `VACANCY_RATE` from actual monthly placements
 
-```
-p_pn = σ( α + u_n + β₁·r_p + β₂·q_p + β₃·h_n + β₄·(r_p × h_n) + β₅·g_pn + β₆·t )
-```
-
-| Covariate | Meaning | Effect |
-|-----------|---------|--------|
-| `r_p` | composite clinical complexity (CPS + ADL) | ↑ complexity → ↑ decline |
-| `q_p` | priority ordinal (0–3) | ↑ urgency → ↓ decline |
-| `h_n` | for-profit facility flag | slight ↑ selectivity |
-| `g_pn` | gender mismatch | strong ↑ decline |
-| `t`   | flu season (Nov–Jan) | +12% decline rate |
-| `u_n` | facility random effect ~ N(0, 0.25) | unobserved heterogeneity |
-
-The output is a **P × N deferral matrix D** used by both the LP solver and the simulators.  
-All β values are placeholders estimated from mock data; replace with MLE on real VCH offer outcomes.
-
-### Step 2 — Data Layer (`model/parameters.py`, `model/data_loader.py`)
-
-Central config for all constants, calibrated to BC Office of Seniors Advocate (OSA) 2024/25:
-
-- **λ = 28 clients/month**, **μ = 18 waitlist-accessible vacancies/month**
-- **Q₀ = 90** (starting backlog); steady-state Q_ss ≈ 83 across four priority tiers
-- Transfer/Site Specific calibrated so mean wait ≈ **473 days** under Cyclic FIFO (OSA 2024/25 target)
-- Four tiers with tier-specific abandonment: Acute Care 50%/mo · Community Emergency 30%/mo ·
-  Transfer 9.4%/mo · Community High 2%/mo
-
-### Step 3 — LP Optimisation (`model/optimisation/`)
-
-Batch assignment formulated as a bipartite matching LP:
-
-```
-min   Σ_p Σ_n  D[p,n] · x[p,n]
-
-s.t.  Σ_n x[p,n]  = 1        ∀ p   (each client assigned once)
-      Σ_p x[p,n]  ≤ C_n      ∀ n   (facility capacity)
-      x[p,n]      = 0         if gender mismatch (hard block)
-      x[p,n]      ∈ [0, 1]
-```
-
-The constraint matrix is the node-arc incidence matrix of a bipartite graph — **totally unimodular**
-— so the LP relaxation always returns an integer solution. No branch-and-bound needed.
-
-### Step 4 — Queue Model (`model/simulation/queue_model.py`)
-
-Discrete-event simulation of the bed-scarce waitlist with three policies:
-
-| Policy | Description |
-|--------|-------------|
-| **Erlang-A (FCFS)** | No declinations — lower bound on bed-days wasted |
-| **Cyclic FIFO** | VCH's current cycling discipline across four tiers |
-| **Optimised** | Fairness-window + minimum-p_pn client selection |
-
-Each declined offer wastes `OFFER_TURNAROUND_DAYS = 2` empty bed-days before re-offer.
-
-### Step 5 — DES (`model/simulation/des.py`)
-
-Extends the queue model with four realistic features:
-
-1. **Priority escalation** — clients auto-upgrade after waiting too long (Transfer → 90 days, CommEm → 45 days)
-2. **Flu-season calendar** — month-accurate `t` flag fed to deferral model
-3. **Batch arrivals** — 10% of events bring 2–4 clients (hospital discharge planning days)
-4. **Geographic soft penalty** — logit penalty when client's home region ≠ facility region
-
----
-
-## Running the Model
-
-```bash
-# Validate each step (all checks should pass)
-PYTHONPATH=. python model/validation/validate_step2.py   # 36 checks
-PYTHONPATH=. python model/validation/validate_step3.py   # 36 checks
-PYTHONPATH=. python model/validation/validate_step4.py   # 32 checks
-PYTHONPATH=. python model/validation/validate_step5.py   # 30 checks
-
-# Run the LP comparison report (batch snapshot)
-PYTHONPATH=. python model/optimisation/compare.py
-
-# Run the queue simulation (10 replications, ~seconds)
-PYTHONPATH=. python model/simulation/queue_model.py
-
-# Run the full DES (30 replications, ~minutes)
-PYTHONPATH=. python model/simulation/des.py
-
-# Reproduce all figures
-PYTHONPATH=. python results/plot_results.py
-
-# Experiments
-PYTHONPATH=. python experiments/small_experiment.py    # 2-facility, hand-verifiable
-PYTHONPATH=. python experiments/vch_experiment.py      # VCH scale, 55 facilities
-```
-
----
-
-## Results
-
-> **Note:** All results below use synthetic mock data with placeholder β coefficients.
-> Magnitudes are indicative; re-run after fitting β on real VCH offer-outcome data.
-
-### Step 3 — LP Batch Optimisation (full-information snapshot)
-
-| Metric | Cyclic FIFO | LP Optimal | Change |
-|--------|-------------|------------|--------|
-| Expected declinations | ~113 | ~46 | **−59%** |
-
-### Step 4 — Queue Model (10 reps, 3-year horizon)
-
-| Metric | Cyclic FIFO | Optimised | Change |
-|--------|-------------|-----------|--------|
-| Declination rate | — | — | **−18%** |
-| Bed-days wasted / year | — | ~60 saved | **−19%** |
-| Mean wait (all tiers) | — | — | **−61%** |
-| Acute Care mean wait | — | — | **−73%** |
-
-### Step 5 — DES with Extensions (30 reps, 3-year horizon)
-
-| Metric | Cyclic FIFO | Optimised | Change |
-|--------|-------------|-----------|--------|
-| Declination rate | — | — | **−27%** |
-| Bed-days wasted / year | — | ~44 saved | **−34%** |
-| Mean wait (all tiers) | — | — | **−27%** |
-| Acute Care mean wait | — | — | **−65%** |
-| Out-of-region placements | — | — | **−72%** |
-
-Flu-season effect: **+12% declination rate** in November–January (captured by the seasonal `t` flag).
-
-Transfer/Site Specific mean wait under Cyclic FIFO calibrated to **473 days** (OSA 2024/25).
-
-### Figures
-
-| Figure | Content |
-|--------|---------|
-| `fig1_calibration.png` | Deferral rate calibration — logistic curve vs mock data |
-| `fig2_declination_rates.png` | Per-tier declination rates across three policies |
-| `fig3_bed_days_wasted.png` | Bed-days wasted per year (with 95% CIs) |
-| `fig4_wait_times.png` | Mean wait by priority tier across three policies |
-| `fig5_lp_comparison.png` | LP vs baselines — expected declinations (batch snapshot) |
-| `fig6_des_extensions.png` | DES extensions: escalation, flu season, geo penalty |
-| `fig7_summary.png` | One-page summary: all key metrics side-by-side |
-
----
-
-## Using Real VCH Data
-
-When real data arrives, only two files change:
-
-1. **`model/data_loader.py`** — update `_DEFAULT_DIR` to point at the real CSVs  
-2. **`model/parameters.py`** — re-estimate β via logistic regression on `WaitlistOfferOutcome`,
-   recalibrate `VACANCY_RATE` from actual waitlist placements per month
-
-All downstream code (Steps 3–5) imports through `load_all()` and `model.parameters` — nothing
-else needs to change.
+Everything else: the BIP, the simulators, and the experiments, imports through those two files and requires no other changes.

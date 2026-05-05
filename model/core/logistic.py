@@ -212,7 +212,7 @@ def build_D_matrix(
             h_n  = h_n_arr[n_idx]
             u_n  = u_n_arr[n_idx]
 
-            D[p_idx, n_idx] = compute_p_pn(r_p, q_p, h_n, g_pn, t, u_n)
+            D[p_idx, n_idx] = compute_p_pn(r_p, q_p, h_n, t, u_n)
 
             if g_pn == 1:
                 gender_blocks.append((p_idx, n_idx))

@@ -44,7 +44,6 @@ from model.parameters import (
     FAIRNESS_WINDOW, FAIRNESS_TOLERANCE,
     SIM_HORIZON, WARM_UP_DAYS, N_REPLICATIONS, MAX_OFFERS,
     FLU_MONTHS, compute_r_p, compute_p_pn, funding_to_h_n,
-    is_gender_mismatch,
 )
 
 # ---------------------------------------------------------------------------
@@ -73,7 +72,6 @@ class Client:
     priority:     str
     q_p:          int
     r_p:          float
-    gender:       str
     arrival_time: float
     n_offers:     int = 0
     abandon_time: float = math.inf
@@ -94,7 +92,6 @@ class QueueSimulator:
     capacities      : list[int] length N  (used for vacancy weighting)
     h_n_arr         : np.ndarray(N) — for-profit flags
     u_n_arr         : np.ndarray(N) — facility random effects
-    gender_lim_arr  : list(N) — facility gender limitation
     seed            : int
     """
 
@@ -105,7 +102,6 @@ class QueueSimulator:
         capacities:     list[int],
         h_n_arr:        np.ndarray,
         u_n_arr:        np.ndarray,
-        gender_lim_arr: list,
         seed:           int = 0,
     ):
         self.policy         = policy
@@ -114,7 +110,6 @@ class QueueSimulator:
         self.capacities     = capacities
         self.h_n_arr        = h_n_arr
         self.u_n_arr        = u_n_arr
-        self.gender_lim_arr = gender_lim_arr
 
         total_cap = sum(capacities)
         # Vacancy weight per facility: proportional to capacity
@@ -291,10 +286,9 @@ class QueueSimulator:
         else:
             month = int((self.now % 365) // 30) + 1
             t_flu = 1 if month in FLU_MONTHS else 0
-            g_pn  = is_gender_mismatch(client.gender, self.gender_lim_arr[facility_idx])
             p_pn  = compute_p_pn(
                 client.r_p, client.q_p,
-                int(self.h_n_arr[facility_idx]), g_pn, t_flu,
+                int(self.h_n_arr[facility_idx]), t_flu,
                 float(self.u_n_arr[facility_idx]),
             )
 
@@ -347,11 +341,8 @@ class QueueSimulator:
             return self._select_optimised(facility_idx)
         return None
 
-    def _eligible_in_tier(self, tier: str, n: int) -> list[Client]:
-        return [
-            c for c in self.queues[tier]
-            if is_gender_mismatch(c.gender, self.gender_lim_arr[n]) == 0
-        ]
+    def _eligible_in_tier(self, tier: str) -> list[Client]:
+        return list(self.queues[tier])
 
     def _pop_from_tier(self, tier: str, client: Client) -> None:
         q = self.queues[tier]
@@ -362,10 +353,10 @@ class QueueSimulator:
                 return
 
     def _select_fcfs(self, n: int) -> Client | None:
-        """Longest-waiting eligible client across all tiers."""
+        """Longest-waiting client across all tiers."""
         best: Client | None = None
         for tier in PRIORITY_LABELS:
-            for c in self._eligible_in_tier(tier, n):
+            for c in self._eligible_in_tier(tier):
                 if best is None or c.arrival_time < best.arrival_time:
                     best = c
         if best is not None:
@@ -381,7 +372,7 @@ class QueueSimulator:
         """
         for i in range(len(_CYCLIC_ORDER)):
             tier = _CYCLIC_ORDER[(self.cycle_pos + i) % len(_CYCLIC_ORDER)]
-            eligible = self._eligible_in_tier(tier, n)
+            eligible = self._eligible_in_tier(tier)
             if eligible:
                 client = min(eligible, key=lambda c: c.arrival_time)
                 self._pop_from_tier(tier, client)
@@ -410,14 +401,13 @@ class QueueSimulator:
 
         candidates = []
         for tier in eligible_tiers:
-            candidates.extend(self._eligible_in_tier(tier, n))
+            candidates.extend(self._eligible_in_tier(tier))
         if not candidates:
             return None
 
         def _score(c: Client) -> float:
-            g = is_gender_mismatch(c.gender, self.gender_lim_arr[n])
             return compute_p_pn(
-                c.r_p, c.q_p, int(self.h_n_arr[n]), g, t_flu,
+                c.r_p, c.q_p, int(self.h_n_arr[n]), t_flu,
                 float(self.u_n_arr[n]),
             )
 
@@ -434,15 +424,14 @@ class QueueSimulator:
         tiers = list(PRIORITY_FRACS.keys())
         probs = [PRIORITY_FRACS[t] for t in tiers]
         priority = str(self.rng.choice(tiers, p=probs))
-        cps    = int(self.rng.choice(range(7), p=_CPS_PROBS))
-        adl    = int(self.rng.choice(range(7), p=_ADL_PROBS))
-        gender = "Female" if self.rng.random() < 0.55 else "Male"
+        cps = int(self.rng.choice(range(7), p=_CPS_PROBS))
+        adl = int(self.rng.choice(range(7), p=_ADL_PROBS))
+        self.rng.random()  # preserve RNG sequence (formerly gender draw)
         return Client(
             cid=self._cid_counter,
             priority=priority,
             q_p=PRIORITY_MAP[priority],
             r_p=compute_r_p(cps, adl),
-            gender=gender,
             arrival_time=arrival_time,
         )
 
@@ -504,7 +493,6 @@ def run_replications(
     capacities:     list[int],
     h_n_arr:        np.ndarray,
     u_n_arr:        np.ndarray,
-    gender_lim_arr: list,
     n_reps:         int = N_REPLICATIONS,
     seed_base:      int = 0,
     sim_days:       int = SIM_HORIZON,
@@ -518,7 +506,6 @@ def run_replications(
             capacities=capacities,
             h_n_arr=h_n_arr,
             u_n_arr=u_n_arr,
-            gender_lim_arr=gender_lim_arr,
             seed=seed_base + rep * 100,
         )
         results.append(sim.run(sim_days=sim_days, warmup_days=warmup_days))
@@ -661,8 +648,7 @@ def run_queue_comparison(
         funding_to_h_n(facilities_df.loc[i, "funding"])
         for i in range(len(facility_names))
     ])
-    u_n_arr        = np.array([u_n_map.get(name, 0.0) for name in facility_names])
-    gender_lim_arr = [None] * len(facility_names)
+    u_n_arr = np.array([u_n_map.get(name, 0.0) for name in facility_names])
 
     print(f"\n  Initial queue: {INITIAL_QUEUE_SIZE} clients  |  "
           f"Vacancy rate: {VACANCY_RATE*30:.0f}/month  |  "
@@ -672,7 +658,7 @@ def run_queue_comparison(
 
     kwargs = dict(
         facility_names=facility_names, capacities=capacities,
-        h_n_arr=h_n_arr, u_n_arr=u_n_arr, gender_lim_arr=gender_lim_arr,
+        h_n_arr=h_n_arr, u_n_arr=u_n_arr,
         n_reps=n_reps, sim_days=sim_days, warmup_days=warmup_days,
     )
 
