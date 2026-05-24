@@ -1,16 +1,27 @@
 # Optimising Long-Term Care Placement to Reduce Service Provider Declinations
-
-**MATH 402W Capstone**
-Spring 2026
+ 
+**MATH 402W Capstone · Simon Fraser University · Spring 2026**
+ 
+---
+ 
+### 🏆 Recognition
+ 
+> **Top 5 National Finalist — 2026 CORS Undergraduate Paper Competition (All Canada 🇨🇦)**
+>
+> Selected as a **top 5 finalist nationally** by the [Canadian Operational Research Society](https://cors.ca/). Hosted at CORS 2026 in Kingston, Ontario (June 8–10, 2026).
+>
+> 📄 [Research Paper (PDF)](https://drive.google.com/file/d/1dIwS2VFXPDLI-SDxqwhn-Y01DX2q2IWt/view?usp=sharing) · 📰 [LinkedIn Announcement](https://www.linkedin.com/feed/update/urn:li:activity:7464161139032215552/?utm_source=share&utm_medium=member_desktop&rcm=ACoAAEOwE3MB72WZTo_C4_V7ooMBFgUZFf-xZTo)
+ 
+<img width="512" height="768" alt="CORS 2026 Undergraduate Paper Competition Finalists" src="https://github.com/user-attachments/assets/7a180fc3-a454-42cd-96ff-b55cae9275df" />
 
 ---
-
+ 
 ## Overview
-
+ 
 When a bed opens in a VCH long-term care facility, it is offered to a client on the priority waitlist. If the care provider **declines** the offer, the bed sits empty for ~2 days before the next offer goes out. This project builds a data-driven assignment policy — a fairness-window selector guided by predicted declination probabilities — and evaluates it against VCH's current Cyclic FIFO discipline using queueing analysis and discrete-event simulation.
-
+ 
 **All paper results come from the three scripts in `experiments/`.** The `model/` folder is the supporting library those scripts depend on.
-
+ 
 ---
 
 ## Quickstart
